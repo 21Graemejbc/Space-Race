@@ -18,7 +18,7 @@ namespace SpaceRacce
     public partial class Form1 : Form
     {
         #region init
-        //Players
+        //Shared player variables
         const int playerSpeed = 5;
         const int playerSide = 16;
 
@@ -76,9 +76,11 @@ namespace SpaceRacce
         #region keys
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
+            //Check if a key has been pressed down, if it has been do the corresponding code
             switch (e.KeyCode)
             {
                 case Keys.W:
+                    //Register appropriate bool variable as true
                     wDown = true;
                     break;
                 case Keys.S:
@@ -91,9 +93,11 @@ namespace SpaceRacce
                     downDown = true;
                     break;
                 case Keys.Space:
+                    //Run function to start the game if space key is pressed under the right conditions
                     if (gameState == "startup" || gameState == "over") { startGame(); }
                     break;
                 case Keys.Escape:
+                    //Close the application if the escape key is pressed under the right conditions
                     if (gameState == "startup" || gameState == "over") { Application.Exit(); }
                     break;
             }
@@ -101,9 +105,11 @@ namespace SpaceRacce
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
+            //Check if a key has been released, if it has, run the corresponding code
             switch (e.KeyCode)
             {
                 case Keys.W:
+                    //Log appropriate bool as false
                     wDown = false;
                     break;
                 case Keys.S:
@@ -122,6 +128,7 @@ namespace SpaceRacce
         private void fps_Tick(object sender, EventArgs e)
         {
             #region movement
+            //Move the players the right direction when the key is being pressed and they're in range
             //Player One
             if (wDown == true && player1Y > 0) { player1Y -= playerSpeed; }
             if (sDown == true && player1Y < this.Height - playerSide) { player1Y += playerSpeed; }
@@ -130,17 +137,20 @@ namespace SpaceRacce
             if (upDown == true && player2Y > 0) { player2Y -= playerSpeed; }
             if (downDown == true && player2Y < this.Height - playerSide) { player2Y += playerSpeed; }
 
-            //Left-moving rocks
+            //Move every rock in the lists
+            //Left-moving
             for (int i = 0; i < leftMoversXList.Count(); i++) { leftMoversXList[i] -= rockSpeed; }
 
-            //Right-moving rocks
+            //Right-moving
             for (int i = 0; i < rightMoversXList.Count(); i++) { rightMoversXList[i] += rockSpeed; }
             #endregion
 
             #region rockSpawner
+            //Grab random numbers
             int leftVal = randGen.Next(1, 101);
             int rightVal = randGen.Next(1, 101);
 
+            //Spawn right or left moving rocks if the percentage is right
             if (rightVal < spawnPercent)
             {
                 rightMoversXList.Add(10);
@@ -155,6 +165,7 @@ namespace SpaceRacce
             #endregion
 
             #region rockKiller
+            //Remove the rocks if they leave the screen bounds
             for (int i = 0; i < leftMoversXList.Count(); i++)
             {
                 if (leftMoversXList[i] < 0)
@@ -175,6 +186,7 @@ namespace SpaceRacce
             #endregion
 
             #region scoring
+            //If one of the players reach the top of the screen, add to their score, update their score display, reset their pos, and play a sound
             if (player1Y <= 0)
             {
                 player1Score++;
@@ -197,6 +209,7 @@ namespace SpaceRacce
             #endregion
 
             #region winCondition
+            //If one of the players reaches 3 points, end the game
             if (player1Score == 3)
             {
                 fps.Enabled = false;
@@ -214,9 +227,11 @@ namespace SpaceRacce
             #endregion
 
             #region collisions
+            //Draw player hitboxes
             Rectangle player1Box = new Rectangle(player1X, player1Y, playerSide, playerSide);
             Rectangle player2Box = new Rectangle(player2X, player2Y, playerSide, playerSide);
 
+            //Draw hitboxes for all of the asteroids in both lists, if a player hitbox intersects with one: reset the player pos, and play a sound
             for (int i = 0; i < rightMoversXList.Count(); i++)
             {
                 Rectangle rightRockBox = new Rectangle(rightMoversXList[i], rightMoversYList[i], rockX, rockY);
@@ -234,17 +249,20 @@ namespace SpaceRacce
             }
             #endregion
 
+            //Run the paint method, to refresh the screen
             Refresh();
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             #region screenDrawing
+            //If the game is in the startup state, draw the screen as such
             if (gameState == "startup")
             {
                 titleLabel.Text = "SPACE RACE";
                 subTitleLabel.Text = "Start - Space | Exit - Escape";
             }
+            //If the game is in the running state:
             else if (gameState == "running")
             {
                 //Draw player 1
@@ -259,6 +277,7 @@ namespace SpaceRacce
                 //Draw right-moving rocks
                 for (int i = 0; i < rightMoversXList.Count(); i++) { e.Graphics.FillRectangle(whiteBrush, rightMoversXList[i], rightMoversYList[i], rockX, rockY); }
             }
+            //If the game is in the over state, draw the screen as such
             else if (gameState == "over")
             {
                 titleLabel.Text = $"{winner} won!!";
@@ -270,31 +289,37 @@ namespace SpaceRacce
         public void startGame()
         {
             #region gameInit
+            //Clear text fields
             titleLabel.Text = null;
             subTitleLabel.Text = null;
 
+            //Enable the timer and set the game state
             fps.Enabled = true;
             gameState = "running";
 
+            //Clear all the lists
             leftMoversXList.Clear();
             leftMoversYList.Clear();
 
             rightMoversXList.Clear();
             rightMoversYList.Clear();
 
+            //Reset the player pos's
             player1Y = 475;
             player2Y = 475;
 
+            //Reset the scores
             player1Score = 0;
             player2Score = 0;
 
+            //Reset the score labels
             player1ScoreLabel.Text = "0";
             player2ScoreLabel.Text = "0";
 
+            //Setup the sound players
             collisionPlayer = new SoundPlayer(SpaceRac.Properties.Resources.Collision);
             winPlayer       = new SoundPlayer(SpaceRac.Properties.Resources.Win);
             gameOverPlayer = new SoundPlayer(SpaceRac.Properties.Resources.Game_Over);
-
             #endregion
         }
     }
